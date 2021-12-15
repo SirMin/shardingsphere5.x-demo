@@ -1,0 +1,41 @@
+dataSources:
+    ds0:
+      dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+      jdbcUrl: jdbc:mysql://localhost:3306/test0
+      username:
+      password:
+    ds1:
+      dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+      jdbcUrl: jdbc:mysql://localhost:3306/test1
+      username:
+      password:
+rules:
+  # 配置分片规则
+  - !SHARDING
+    tables:
+      # 配置 t_order 表规则
+      t_user:
+        actualDataNodes: ds$->{0..1}.t_user$->{0..1}
+        # 配置分库策略
+        databaseStrategy:
+          standard:
+            shardingColumn: sharding_key
+            shardingAlgorithmName: database_inline
+        # 配置分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: id
+            shardingAlgorithmName: table_inline
+
+    # 配置分片算法
+    shardingAlgorithms:
+      database_inline:
+        type: INLINE
+        props:
+          algorithm-expression: ds$->{sharding_key % 2}
+      table_inline:
+        type: INLINE
+        props:
+          algorithm-expression: t_user$->{id % 2}
+props:
+  sql-show: true
